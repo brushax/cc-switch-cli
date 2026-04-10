@@ -3,8 +3,10 @@ use crate::app_config::{AppType, MultiAppConfig};
 use crate::database::Database;
 use crate::error::AppError;
 use crate::provider::Provider;
+use crate::services::skill::{SkillService, SkillState, SkillStore, SkillsIndex};
 use crate::store::AppState;
-use chrono::Utc;
+use chrono::{TimeZone, Utc};
+use serde::Serialize;
 use serde_json::Value;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -26,6 +28,16 @@ pub struct BackupInfo {
 
 /// 配置导入导出相关业务逻辑
 pub struct ConfigService;
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct JsonConfigSnapshot {
+    snapshot_version: u32,
+    exported_at: String,
+    config: MultiAppConfig,
+    settings: crate::settings::AppSettings,
+    skills_index: SkillsIndex,
+}
 
 impl ConfigService {
     /// 为当前数据库创建 SQL 备份，返回备份 ID（若数据库不存在则返回空字符串）。
@@ -230,11 +242,23 @@ impl ConfigService {
         db.export_sql(target_path)
     }
 
-    /// Export current config snapshot as readable pretty JSON.
+    /// Export current configuration snapshot as readable pretty JSON.
     pub fn export_json_snapshot_to_path(target_path: &Path) -> Result<(), AppError> {
         let state = AppState::try_new()?;
-        let config = state.config.read().map_err(AppError::from)?;
-        let json = serde_json::to_string_pretty(&*config)
+        let mut config = state.config.read().map_err(AppError::from)?.clone();
+        let settings = crate::settings::get_settings();
+        let skills_index = SkillService::load_index()?;
+        config.skills = legacy_skill_store_from_index(&skills_index);
+
+        let snapshot = JsonConfigSnapshot {
+            snapshot_version: 1,
+            exported_at: Utc::now().to_rfc3339(),
+            config,
+            settings,
+            skills_index,
+        };
+
+        let json = serde_json::to_string_pretty(&snapshot)
             .map_err(|e| AppError::Message(format!("Failed to serialize config as JSON: {e}")))?;
         fs::write(target_path, json).map_err(|e| AppError::io(target_path, e))?;
         Ok(())
@@ -393,5 +417,30 @@ impl ConfigService {
         }
 
         Ok(())
+    }
+}
+
+fn legacy_skill_store_from_index(index: &SkillsIndex) -> SkillStore {
+    let skills = index
+        .skills
+        .values()
+        .map(|skill| {
+            let installed_at = Utc
+                .timestamp_opt(skill.installed_at, 0)
+                .single()
+                .unwrap_or_else(Utc::now);
+            (
+                skill.directory.clone(),
+                SkillState {
+                    installed: true,
+                    installed_at,
+                },
+            )
+        })
+        .collect();
+
+    SkillStore {
+        skills,
+        repos: index.repos.clone(),
     }
 }

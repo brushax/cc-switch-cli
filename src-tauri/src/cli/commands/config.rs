@@ -22,7 +22,7 @@ pub enum ConfigCommand {
         /// Output SQL file path
         file: PathBuf,
     },
-    /// Export readable JSON snapshot to file
+    /// Export readable JSON snapshot of config/settings/skills to file
     ExportJson {
         /// Output JSON file path
         file: PathBuf,
@@ -178,7 +178,7 @@ fn export_json_snapshot(file: &PathBuf) -> Result<(), AppError> {
     println!(
         "{}",
         info(&format!(
-            "Exporting readable JSON snapshot to {}...",
+            "Exporting readable JSON snapshot (config/settings/skills) to {}...",
             file.display()
         ))
     );
@@ -215,10 +215,7 @@ fn export_json_snapshot(file: &PathBuf) -> Result<(), AppError> {
 fn import_config(file: &PathBuf) -> Result<(), AppError> {
     println!(
         "{}",
-        info(&format!(
-            "Importing configuration from {}...",
-            file.display()
-        ))
+        info(&format!("Importing SQL backup from {}...", file.display()))
     );
 
     // Check if source file exists
@@ -257,7 +254,7 @@ fn import_config(file: &PathBuf) -> Result<(), AppError> {
 
     println!(
         "{}",
-        success(&format!("✓ Configuration imported from {}", file.display()))
+        success(&format!("✓ SQL backup imported from {}", file.display()))
     );
     if !backup_id.is_empty() {
         println!("{}", info(&format!("  Backup created: {}", backup_id)));
@@ -303,7 +300,10 @@ fn restore_config(backup_id: Option<&str>, file_path: Option<&Path>) -> Result<(
 
     // 情况1：指定了备份 ID
     if let Some(id) = backup_id {
-        println!("{}", info(&format!("Restoring from backup '{}'...", id)));
+        println!(
+            "{}",
+            info(&format!("Restoring from SQL backup '{}'...", id))
+        );
 
         let confirm =
             inquire::Confirm::new("This will replace your current configuration. Continue?")
@@ -326,7 +326,7 @@ fn restore_config(backup_id: Option<&str>, file_path: Option<&Path>) -> Result<(
 
         println!(
             "{}",
-            success(&format!("✓ Configuration restored from backup '{}'", id))
+            success(&format!("✓ SQL backup restored from backup '{}'", id))
         );
         if !pre_restore_backup.is_empty() {
             println!(
@@ -348,7 +348,7 @@ fn restore_config(backup_id: Option<&str>, file_path: Option<&Path>) -> Result<(
         println!(
             "{}",
             info(&format!(
-                "Restoring configuration from {}...",
+                "Restoring from SQL backup file {}...",
                 file.display()
             ))
         );
@@ -386,7 +386,7 @@ fn restore_config(backup_id: Option<&str>, file_path: Option<&Path>) -> Result<(
 
         println!(
             "{}",
-            success(&format!("✓ Configuration restored from {}", file.display()))
+            success(&format!("✓ SQL backup restored from {}", file.display()))
         );
         if !pre_restore_backup.is_empty() {
             println!(
@@ -461,7 +461,7 @@ fn restore_config(backup_id: Option<&str>, file_path: Option<&Path>) -> Result<(
     println!(
         "{}",
         success(&format!(
-            "✓ Configuration restored from: {}",
+            "✓ SQL backup restored from: {}",
             selected_backup.display_name
         ))
     );

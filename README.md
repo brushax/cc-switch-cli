@@ -319,9 +319,9 @@ cc-switch skills repos disable <repo> # Disable repo without changing branch
 
 ### ⚙️ Configuration Management
 
-Manage configuration SQL backups/restores and JSON snapshot exports.
+Manage configuration SQL backups/restores and full JSON snapshot exports.
 
-**Features:** Custom SQL backup naming, interactive backup selection, automatic rotation (keep 10), SQL backup import/export, readable JSON snapshot export, common snippets, WebDAV sync.
+**Features:** Custom SQL backup naming, interactive backup selection, automatic rotation (keep 10), SQL backup import/export, readable full JSON snapshot export, common snippets, WebDAV sync.
 
 ```bash
 cc-switch config show                # Display configuration
@@ -348,7 +348,7 @@ cc-switch config export <path>       # Export current DB as SQL backup
 cc-switch config import <path>       # Import SQL backup (restores DB)
 
 # Readable JSON snapshot export
-cc-switch config export-json <path>  # Export current config snapshot as pretty JSON
+cc-switch config export-json <path>  # Export current config, settings.json, and skills index as pretty JSON
 
 # WebDAV sync
 cc-switch config webdav show

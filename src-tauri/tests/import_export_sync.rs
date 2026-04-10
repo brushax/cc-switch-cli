@@ -3,8 +3,10 @@ use serde_json::json;
 use std::{fs, path::Path};
 
 use cc_switch_lib::{
-    get_claude_settings_path, read_json_file, AppError, AppType, ConfigService, Database,
-    MultiAppConfig, Provider, ProviderMeta, ProviderService,
+    cli::commands::skills::{SkillReposCommand, SkillsCommand},
+    get_claude_settings_path, read_json_file, update_settings, AppError, AppSettings, AppType,
+    ConfigService, Database, MultiAppConfig, Provider, ProviderMeta, ProviderService,
+    WebDavSyncSettings,
 };
 
 #[path = "support.rs"]
@@ -997,6 +999,25 @@ fn export_json_snapshot_writes_readable_config_file() {
     let state = state_from_config(config);
     state.save().expect("persist db");
 
+    let mut settings = AppSettings::default();
+    settings.webdav_sync = Some(WebDavSyncSettings {
+        enabled: true,
+        base_url: "https://dav.example.com/root".to_string(),
+        username: "snapshot-user".to_string(),
+        password: "snapshot-pass".to_string(),
+        auto_sync: true,
+        ..WebDavSyncSettings::default()
+    });
+    update_settings(settings).expect("persist settings");
+
+    cc_switch_lib::cli::commands::skills::execute(
+        SkillsCommand::Repos(SkillReposCommand::Add {
+            url: "snapshot-owner/snapshot-skills@dev".to_string(),
+        }),
+        None,
+    )
+    .expect("add custom skills repo");
+
     let target = home.join(".cc-switch").join("snapshot.json");
     ConfigService::export_json_snapshot_to_path(&target).expect("export json snapshot");
 
@@ -1011,9 +1032,54 @@ fn export_json_snapshot_writes_readable_config_file() {
         parsed.is_object(),
         "exported snapshot should be a JSON object"
     );
+    assert_eq!(parsed["snapshotVersion"], json!(1));
+    assert!(
+        parsed["exportedAt"].as_str().is_some(),
+        "snapshot should include an export timestamp"
+    );
+    assert!(
+        parsed["config"].is_object(),
+        "snapshot should include database-backed config"
+    );
+    assert!(
+        parsed["settings"].is_object(),
+        "snapshot should include settings.json content"
+    );
+    assert!(
+        parsed["skillsIndex"].is_object(),
+        "snapshot should include the authoritative skills index"
+    );
     assert!(
         content.contains("p-json"),
         "exported snapshot should include persisted provider data"
+    );
+    assert_eq!(
+        parsed["settings"]["webdavSync"]["baseUrl"],
+        json!("https://dav.example.com/root")
+    );
+    assert!(
+        parsed["skillsIndex"]["repos"]
+            .as_array()
+            .expect("skillsIndex repos array")
+            .iter()
+            .any(|repo| {
+                repo["owner"] == json!("snapshot-owner")
+                    && repo["name"] == json!("snapshot-skills")
+                    && repo["branch"] == json!("dev")
+            }),
+        "snapshot should include current custom skills repos"
+    );
+    assert!(
+        parsed["config"]["skills"]["repos"]
+            .as_array()
+            .expect("legacy config.skills repos array")
+            .iter()
+            .any(|repo| {
+                repo["owner"] == json!("snapshot-owner")
+                    && repo["name"] == json!("snapshot-skills")
+                    && repo["branch"] == json!("dev")
+            }),
+        "legacy config.skills projection should reflect the current skills index"
     );
 }
 

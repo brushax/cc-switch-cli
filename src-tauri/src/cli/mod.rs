@@ -51,7 +51,7 @@ pub enum Commands {
     #[command(subcommand)]
     Skills(commands::skills::SkillsCommand),
 
-    /// Manage SQL backups/restores, JSON snapshot exports, common snippets, and WebDAV sync
+    /// Manage SQL backups/restores, full JSON snapshot exports, common snippets, and WebDAV sync
     #[command(subcommand)]
     Config(commands::config::ConfigCommand),
 
