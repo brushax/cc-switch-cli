@@ -51,7 +51,7 @@ pub enum Commands {
     #[command(subcommand)]
     Skills(commands::skills::SkillsCommand),
 
-    /// Manage configuration, backups, common snippets, and WebDAV sync
+    /// Manage SQL backups/restores, JSON snapshot exports, common snippets, and WebDAV sync
     #[command(subcommand)]
     Config(commands::config::ConfigCommand),
 
@@ -288,6 +288,18 @@ mod tests {
                 super::commands::config_webdav::WebDavCommand::CheckConnection,
             ))) => {}
             _ => panic!("expected config webdav check-connection command"),
+        }
+    }
+
+    #[test]
+    fn parses_config_export_json_subcommand() {
+        let cli = Cli::parse_from(["cc-switch", "config", "export-json", "/tmp/snapshot.json"]);
+
+        match cli.command {
+            Some(Commands::Config(super::commands::config::ConfigCommand::ExportJson { file })) => {
+                assert_eq!(file, std::path::PathBuf::from("/tmp/snapshot.json"));
+            }
+            _ => panic!("expected config export-json command"),
         }
     }
 

@@ -386,17 +386,17 @@ pub fn tui_skills_empty_hint() -> &'static str {
 
 pub fn tui_config_item_export() -> &'static str {
     if is_chinese() {
-        "导出配置"
+        "导出 SQL 备份"
     } else {
-        "Export Config"
+        "Export SQL Backup"
     }
 }
 
 pub fn tui_config_item_import() -> &'static str {
     if is_chinese() {
-        "导入配置"
+        "导入 SQL 备份"
     } else {
-        "Import Config"
+        "Import SQL Backup"
     }
 }
 
@@ -882,33 +882,33 @@ pub fn tui_error_failed_to_read_config(e: &str) -> String {
 
 pub fn tui_config_export_title() -> &'static str {
     if is_chinese() {
-        "导出配置"
+        "导出 SQL 备份"
     } else {
-        "Export Configuration"
+        "Export SQL Backup"
     }
 }
 
 pub fn tui_config_export_prompt() -> &'static str {
     if is_chinese() {
-        "导出路径："
+        "SQL 备份导出路径："
     } else {
-        "Export path:"
+        "SQL backup export path:"
     }
 }
 
 pub fn tui_config_import_title() -> &'static str {
     if is_chinese() {
-        "导入配置"
+        "导入 SQL 备份"
     } else {
-        "Import Configuration"
+        "Import SQL Backup"
     }
 }
 
 pub fn tui_config_import_prompt() -> &'static str {
     if is_chinese() {
-        "从路径导入："
+        "从路径导入 SQL 备份："
     } else {
-        "Import from path:"
+        "Import SQL backup from path:"
     }
 }
 

@@ -700,9 +700,9 @@ pub fn tui_toast_prompt_deleted() -> &'static str {
 
 pub fn tui_toast_exported_to(path: &str) -> String {
     if is_chinese() {
-        format!("已导出到 {}", path)
+        format!("SQL 备份已导出到 {}", path)
     } else {
-        format!("Exported to {}", path)
+        format!("SQL backup exported to {}", path)
     }
 }
 
@@ -716,9 +716,9 @@ pub fn tui_error_import_file_not_found(path: &str) -> String {
 
 pub fn tui_toast_imported_config() -> &'static str {
     if is_chinese() {
-        "配置已导入。"
+        "SQL 备份已导入。"
     } else {
-        "Imported config."
+        "SQL backup imported."
     }
 }
 

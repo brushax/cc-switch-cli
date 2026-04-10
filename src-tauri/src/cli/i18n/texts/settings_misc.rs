@@ -282,17 +282,17 @@ pub fn config_management() -> &'static str {
 
 pub fn config_export() -> &'static str {
     if is_chinese() {
-        "📤 导出配置"
+        "📤 导出 SQL 备份"
     } else {
-        "📤 Export Config"
+        "📤 Export SQL Backup"
     }
 }
 
 pub fn config_import() -> &'static str {
     if is_chinese() {
-        "📥 导入配置"
+        "📥 导入 SQL 备份"
     } else {
-        "📥 Import Config"
+        "📥 Import SQL Backup"
     }
 }
 
@@ -386,17 +386,17 @@ pub fn config_show_path() -> &'static str {
 
 pub fn enter_export_path() -> &'static str {
     if is_chinese() {
-        "输入导出文件路径："
+        "输入 SQL 备份导出路径："
     } else {
-        "Enter export file path:"
+        "Enter SQL backup export path:"
     }
 }
 
 pub fn enter_import_path() -> &'static str {
     if is_chinese() {
-        "输入导入文件路径："
+        "输入 SQL 备份导入路径："
     } else {
-        "Enter import file path:"
+        "Enter SQL backup import path:"
     }
 }
 
@@ -410,9 +410,9 @@ pub fn enter_restore_path() -> &'static str {
 
 pub fn confirm_import() -> &'static str {
     if is_chinese() {
-        "确定要导入配置吗？这将覆盖当前配置。"
+        "确定要导入 SQL 备份吗？这将覆盖当前配置。"
     } else {
-        "Are you sure you want to import? This will overwrite current configuration."
+        "Are you sure you want to import this SQL backup? This will overwrite current configuration."
     }
 }
 

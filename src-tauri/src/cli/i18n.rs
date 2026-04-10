@@ -2929,17 +2929,17 @@ pub mod texts {
 
     pub fn tui_config_item_export() -> &'static str {
         if is_chinese() {
-            "导出配置"
+            "导出 SQL 备份"
         } else {
-            "Export Config"
+            "Export SQL Backup"
         }
     }
 
     pub fn tui_config_item_import() -> &'static str {
         if is_chinese() {
-            "导入配置"
+            "导入 SQL 备份"
         } else {
-            "Import Config"
+            "Import SQL Backup"
         }
     }
 
@@ -4283,33 +4283,33 @@ pub mod texts {
 
     pub fn tui_config_export_title() -> &'static str {
         if is_chinese() {
-            "导出配置"
+            "导出 SQL 备份"
         } else {
-            "Export Configuration"
+            "Export SQL Backup"
         }
     }
 
     pub fn tui_config_export_prompt() -> &'static str {
         if is_chinese() {
-            "导出路径："
+            "SQL 备份导出路径："
         } else {
-            "Export path:"
+            "SQL backup export path:"
         }
     }
 
     pub fn tui_config_import_title() -> &'static str {
         if is_chinese() {
-            "导入配置"
+            "导入 SQL 备份"
         } else {
-            "Import Configuration"
+            "Import SQL Backup"
         }
     }
 
     pub fn tui_config_import_prompt() -> &'static str {
         if is_chinese() {
-            "从路径导入："
+            "从路径导入 SQL 备份："
         } else {
-            "Import from path:"
+            "Import SQL backup from path:"
         }
     }
 
@@ -5030,9 +5030,9 @@ pub mod texts {
 
     pub fn tui_toast_exported_to(path: &str) -> String {
         if is_chinese() {
-            format!("已导出到 {}", path)
+            format!("SQL 备份已导出到 {}", path)
         } else {
-            format!("Exported to {}", path)
+            format!("SQL backup exported to {}", path)
         }
     }
 
@@ -5046,9 +5046,9 @@ pub mod texts {
 
     pub fn tui_toast_imported_config() -> &'static str {
         if is_chinese() {
-            "配置已导入。"
+            "SQL 备份已导入。"
         } else {
-            "Imported config."
+            "SQL backup imported."
         }
     }
 
@@ -7678,17 +7678,17 @@ pub mod texts {
 
     pub fn config_export() -> &'static str {
         if is_chinese() {
-            "📤 导出配置"
+            "📤 导出 SQL 备份"
         } else {
-            "📤 Export Config"
+            "📤 Export SQL Backup"
         }
     }
 
     pub fn config_import() -> &'static str {
         if is_chinese() {
-            "📥 导入配置"
+            "📥 导入 SQL 备份"
         } else {
-            "📥 Import Config"
+            "📥 Import SQL Backup"
         }
     }
 
@@ -7782,17 +7782,17 @@ pub mod texts {
 
     pub fn enter_export_path() -> &'static str {
         if is_chinese() {
-            "输入导出文件路径："
+            "输入 SQL 备份导出路径："
         } else {
-            "Enter export file path:"
+            "Enter SQL backup export path:"
         }
     }
 
     pub fn enter_import_path() -> &'static str {
         if is_chinese() {
-            "输入导入文件路径："
+            "输入 SQL 备份导入路径："
         } else {
-            "Enter import file path:"
+            "Enter SQL backup import path:"
         }
     }
 
@@ -7806,9 +7806,9 @@ pub mod texts {
 
     pub fn confirm_import() -> &'static str {
         if is_chinese() {
-            "确定要导入配置吗？这将覆盖当前配置。"
+            "确定要导入 SQL 备份吗？这将覆盖当前配置。"
         } else {
-            "Are you sure you want to import? This will overwrite current configuration."
+            "Are you sure you want to import this SQL backup? This will overwrite current configuration."
         }
     }
 

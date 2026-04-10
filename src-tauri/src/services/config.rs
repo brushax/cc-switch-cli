@@ -224,10 +224,20 @@ impl ConfigService {
         Ok(())
     }
 
-    /// 将当前 config.json 拷贝到目标路径。
+    /// Export current SQLite state as SQL backup text.
     pub fn export_config_to_path(target_path: &Path) -> Result<(), AppError> {
         let db = Database::init()?;
         db.export_sql(target_path)
+    }
+
+    /// Export current config snapshot as readable pretty JSON.
+    pub fn export_json_snapshot_to_path(target_path: &Path) -> Result<(), AppError> {
+        let state = AppState::try_new()?;
+        let config = state.config.read().map_err(AppError::from)?;
+        let json = serde_json::to_string_pretty(&*config)
+            .map_err(|e| AppError::Message(format!("Failed to serialize config as JSON: {e}")))?;
+        fs::write(target_path, json).map_err(|e| AppError::io(target_path, e))?;
+        Ok(())
     }
 
     pub fn import_config_from_path(file_path: &Path, state: &AppState) -> Result<String, AppError> {

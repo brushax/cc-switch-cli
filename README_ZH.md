@@ -320,9 +320,9 @@ cc-switch skills repos disable <repo> # 禁用仓库但保留当前分支
 
 ### ⚙️ 配置管理
 
-管理配置文件的备份、导入和导出。
+管理配置的 SQL 备份/恢复与 JSON 快照导出。
 
-**功能：** 自定义备份命名、交互式备份选择、自动轮换（保留 10 个）、导入/导出、通用配置片段、WebDAV 同步。
+**功能：** 自定义 SQL 备份命名、交互式备份选择、自动轮换（保留 10 个）、SQL 备份导入/导出、可读 JSON 快照导出、通用配置片段、WebDAV 同步。
 
 ```bash
 cc-switch config show                # 显示配置
@@ -344,9 +344,12 @@ cc-switch config restore             # 交互式：从备份列表选择
 cc-switch config restore --backup <id>    # 通过 ID 恢复特定备份
 cc-switch config restore --file <path>    # 从外部文件恢复
 
-# 导入/导出
-cc-switch config export <path>       # 导出到外部文件
-cc-switch config import <path>       # 从外部文件导入
+# SQL 备份导入/导出
+cc-switch config export <path>       # 将当前数据库导出为 SQL 备份
+cc-switch config import <path>       # 导入 SQL 备份（恢复数据库）
+
+# 可读 JSON 快照导出
+cc-switch config export-json <path>  # 导出当前配置快照（格式化 JSON）
 
 # WebDAV 同步
 cc-switch config webdav show

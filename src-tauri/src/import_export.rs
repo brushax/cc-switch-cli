@@ -23,7 +23,7 @@ pub async fn export_config_to_file(file_path: String) -> Result<Value, String> {
 
     Ok(json!({
         "success": true,
-        "message": "SQL exported successfully",
+        "message": "SQL backup exported successfully",
         "filePath": file_path
     }))
 }

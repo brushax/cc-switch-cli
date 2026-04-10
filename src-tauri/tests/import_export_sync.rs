@@ -971,6 +971,53 @@ fn create_backup_generates_snapshot_file() {
 }
 
 #[test]
+fn export_json_snapshot_writes_readable_config_file() {
+    let _guard = lock_test_mutex();
+    reset_test_fs();
+    let home = ensure_test_home();
+
+    let mut config = MultiAppConfig::default();
+    {
+        let manager = config
+            .get_manager_mut(&AppType::Claude)
+            .expect("claude manager");
+        manager.current = "p-json".to_string();
+        manager.providers.insert(
+            "p-json".to_string(),
+            Provider::with_id(
+                "p-json".to_string(),
+                "JSON Snapshot".to_string(),
+                json!({
+                    "env": { "ANTHROPIC_AUTH_TOKEN": "snapshot-key" }
+                }),
+                None,
+            ),
+        );
+    }
+    let state = state_from_config(config);
+    state.save().expect("persist db");
+
+    let target = home.join(".cc-switch").join("snapshot.json");
+    ConfigService::export_json_snapshot_to_path(&target).expect("export json snapshot");
+
+    let content = fs::read_to_string(&target).expect("read exported snapshot");
+    assert!(
+        content.contains('\n'),
+        "snapshot export should be pretty-printed for readability"
+    );
+
+    let parsed: serde_json::Value = serde_json::from_str(&content).expect("parse exported json");
+    assert!(
+        parsed.is_object(),
+        "exported snapshot should be a JSON object"
+    );
+    assert!(
+        content.contains("p-json"),
+        "exported snapshot should include persisted provider data"
+    );
+}
+
+#[test]
 fn create_backup_retains_only_latest_entries() {
     let _guard = lock_test_mutex();
     reset_test_fs();

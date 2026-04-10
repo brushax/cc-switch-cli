@@ -17,14 +17,19 @@ pub enum ConfigCommand {
     Show,
     /// Show configuration file path
     Path,
-    /// Export configuration to file
+    /// Export SQL backup to file
     Export {
-        /// Output file path
+        /// Output SQL file path
         file: PathBuf,
     },
-    /// Import configuration from file
+    /// Export readable JSON snapshot to file
+    ExportJson {
+        /// Output JSON file path
+        file: PathBuf,
+    },
+    /// Import SQL backup from file
     Import {
-        /// Input file path
+        /// Input SQL file path
         file: PathBuf,
     },
     /// Create a backup of current configuration
@@ -62,6 +67,7 @@ pub fn execute(cmd: ConfigCommand, app: Option<AppType>) -> Result<(), AppError>
         ConfigCommand::Show => show_config(),
         ConfigCommand::Path => show_path(),
         ConfigCommand::Export { file } => export_config(&file),
+        ConfigCommand::ExportJson { file } => export_json_snapshot(&file),
         ConfigCommand::Import { file } => import_config(&file),
         ConfigCommand::Backup { name } => backup_config(name.as_deref()),
         ConfigCommand::Restore { backup, file } => {
@@ -133,7 +139,7 @@ fn show_path() -> Result<(), AppError> {
 fn export_config(file: &PathBuf) -> Result<(), AppError> {
     println!(
         "{}",
-        info(&format!("Exporting configuration to {}...", file.display()))
+        info(&format!("Exporting SQL backup to {}...", file.display()))
     );
 
     // Check if target file already exists
@@ -162,7 +168,45 @@ fn export_config(file: &PathBuf) -> Result<(), AppError> {
 
     println!(
         "{}",
-        success(&format!("✓ Configuration exported to {}", file.display()))
+        success(&format!("✓ SQL backup exported to {}", file.display()))
+    );
+
+    Ok(())
+}
+
+fn export_json_snapshot(file: &PathBuf) -> Result<(), AppError> {
+    println!(
+        "{}",
+        info(&format!(
+            "Exporting readable JSON snapshot to {}...",
+            file.display()
+        ))
+    );
+
+    if file.exists() {
+        let confirm = inquire::Confirm::new(&format!(
+            "File '{}' already exists. Overwrite?",
+            file.display()
+        ))
+        .with_default(false)
+        .prompt()
+        .map_err(|e| AppError::Message(format!("Prompt failed: {}", e)))?;
+
+        if !confirm {
+            println!("{}", info("Cancelled."));
+            return Ok(());
+        }
+    }
+
+    if let Some(parent) = file.parent() {
+        fs::create_dir_all(parent).map_err(|e| AppError::io(parent, e))?;
+    }
+
+    ConfigService::export_json_snapshot_to_path(file)?;
+
+    println!(
+        "{}",
+        success(&format!("✓ JSON snapshot exported to {}", file.display()))
     );
 
     Ok(())
