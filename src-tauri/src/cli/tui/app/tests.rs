@@ -9105,4 +9105,210 @@ mod tests {
             } if id == "p1" && content.contains("Provider One")
         ));
     }
+
+    #[test]
+    fn prompts_editor_ctrl_y_requests_copy_of_editor_content() {
+        let mut app = App::new(Some(AppType::Claude));
+        app.route = Route::Prompts;
+        app.focus = Focus::Content;
+
+        let mut data = UiData::default();
+        data.prompts.rows.push(super::super::data::PromptRow {
+            id: "pr1".to_string(),
+            prompt: crate::prompt::Prompt {
+                id: "pr1".to_string(),
+                name: "Demo".to_string(),
+                content: "hello".to_string(),
+                description: None,
+                enabled: false,
+                created_at: None,
+                updated_at: None,
+            },
+        });
+
+        app.on_key(key(KeyCode::Char('e')), &data);
+
+        let action = app.on_key(ctrl(KeyCode::Char('y')), &data);
+        assert!(matches!(
+            action,
+            Action::ExtractedTextCopy { content } if content == "hello"
+        ));
+        assert!(app.editor.is_some(), "copy should keep the editor open");
+    }
+
+    #[test]
+    fn prompts_editor_ctrl_w_opens_save_to_file_prompt() {
+        let mut app = App::new(Some(AppType::Claude));
+        app.route = Route::Prompts;
+        app.focus = Focus::Content;
+
+        let mut data = UiData::default();
+        data.prompts.rows.push(super::super::data::PromptRow {
+            id: "pr1".to_string(),
+            prompt: crate::prompt::Prompt {
+                id: "pr1".to_string(),
+                name: "Demo".to_string(),
+                content: "hello".to_string(),
+                description: None,
+                enabled: false,
+                created_at: None,
+                updated_at: None,
+            },
+        });
+
+        app.on_key(key(KeyCode::Char('e')), &data);
+
+        let action = app.on_key(ctrl(KeyCode::Char('w')), &data);
+        assert!(matches!(action, Action::None));
+        assert!(matches!(
+            app.overlay,
+            Overlay::TextInput(TextInputState {
+                submit: TextSubmit::ExtractedTextSave,
+                ..
+            })
+        ));
+        assert!(
+            app.editor.is_some(),
+            "save prompt should not close the editor"
+        );
+    }
+
+    #[test]
+    fn text_view_ctrl_y_requests_copy_of_overlay_content() {
+        let mut app = App::new(Some(AppType::Claude));
+        app.overlay = Overlay::TextView(TextViewState {
+            title: "Preview".to_string(),
+            lines: vec!["first".to_string(), "second".to_string()],
+            scroll: 0,
+            action: None,
+        });
+
+        let action = app.on_key(ctrl(KeyCode::Char('y')), &UiData::default());
+        assert!(matches!(
+            action,
+            Action::ExtractedTextCopy { content } if content == "first\nsecond"
+        ));
+        assert!(matches!(app.overlay, Overlay::TextView(_)));
+    }
+
+    #[test]
+    fn common_snippet_view_ctrl_o_requests_external_editor_with_current_content() {
+        let mut app = App::new(Some(AppType::Claude));
+        app.overlay = Overlay::CommonSnippetView {
+            app_type: AppType::Claude,
+            view: TextViewState {
+                title: "Snippet".to_string(),
+                lines: vec!["[demo]".to_string(), "value = 1".to_string()],
+                scroll: 0,
+                action: None,
+            },
+        };
+
+        let action = app.on_key(ctrl(KeyCode::Char('o')), &UiData::default());
+        assert!(matches!(
+            action,
+            Action::ExtractedTextOpenExternal { content } if content == "[demo]\nvalue = 1"
+        ));
+        assert!(matches!(app.overlay, Overlay::CommonSnippetView { .. }));
+    }
+
+    #[test]
+    fn provider_json_preview_ctrl_y_requests_copy_of_settings_preview() {
+        let mut app = App::new(Some(AppType::Claude));
+        app.route = Route::Providers;
+        app.focus = Focus::Content;
+
+        let data = UiData::default();
+        app.on_key(key(KeyCode::Char('a')), &data);
+        app.on_key(key(KeyCode::Enter), &data);
+        app.on_key(key(KeyCode::Tab), &data);
+
+        let action = app.on_key(ctrl(KeyCode::Char('y')), &data);
+        let Action::ExtractedTextCopy { content } = action else {
+            panic!("expected provider preview copy action");
+        };
+
+        let parsed: serde_json::Value =
+            serde_json::from_str(&content).expect("provider preview copy should be valid json");
+        assert!(
+            parsed.is_object(),
+            "provider preview should copy settings JSON"
+        );
+        assert!(
+            !content.contains("\"id\""),
+            "provider preview copy should only expose settingsConfig content"
+        );
+        assert!(
+            !content.contains("\"name\""),
+            "provider preview copy should only expose settingsConfig content"
+        );
+    }
+
+    #[test]
+    fn provider_json_preview_ctrl_y_redacts_openclaw_secrets() {
+        let mut app = App::new(Some(AppType::OpenClaw));
+        app.route = Route::Providers;
+        app.focus = Focus::Content;
+
+        let mut form = crate::cli::tui::form::ProviderAddFormState::new(AppType::OpenClaw);
+        form.focus = crate::cli::tui::form::FormFocus::JsonPreview;
+        form.id.set("openclaw-demo");
+        form.name.set("OpenClaw Demo");
+        form.opencode_api_key.set("sk-openclaw-secret");
+        form.opencode_base_url
+            .set("https://api.openclaw.example/v1");
+        form.openclaw_user_agent = true;
+        app.form = Some(crate::cli::tui::form::FormState::ProviderAdd(form));
+
+        let action = app.on_key(ctrl(KeyCode::Char('y')), &UiData::default());
+        let Action::ExtractedTextCopy { content } = action else {
+            panic!("expected provider preview copy action");
+        };
+
+        assert!(
+            !content.contains("sk-openclaw-secret"),
+            "provider preview copy should not leak redacted secrets"
+        );
+
+        let parsed: serde_json::Value =
+            serde_json::from_str(&content).expect("provider preview copy should be valid json");
+        assert_eq!(parsed["apiKey"], json!("[redacted]"));
+    }
+
+    #[test]
+    fn provider_json_preview_ctrl_y_falls_back_to_visible_settings_when_common_snippet_is_invalid()
+    {
+        let mut app = App::new(Some(AppType::Claude));
+        app.route = Route::Providers;
+        app.focus = Focus::Content;
+
+        let mut form = crate::cli::tui::form::ProviderAddFormState::new(AppType::Claude);
+        form.focus = crate::cli::tui::form::FormFocus::JsonPreview;
+        form.id.set("claude-demo");
+        form.name.set("Claude Demo");
+        form.include_common_config = true;
+        form.claude_base_url.set("https://provider.example");
+        form.claude_api_key.set("sk-provider");
+        app.form = Some(crate::cli::tui::form::FormState::ProviderAdd(form));
+
+        let mut data = UiData::default();
+        data.config.common_snippet = "{invalid json".to_string();
+
+        let action = app.on_key(ctrl(KeyCode::Char('y')), &data);
+        let Action::ExtractedTextCopy { content } = action else {
+            panic!("expected provider preview copy action");
+        };
+
+        let parsed: serde_json::Value =
+            serde_json::from_str(&content).expect("provider preview copy should be valid json");
+        assert_eq!(
+            parsed["env"]["ANTHROPIC_BASE_URL"],
+            json!("https://provider.example")
+        );
+        assert_eq!(parsed["env"]["ANTHROPIC_AUTH_TOKEN"], json!("sk-provider"));
+        assert!(
+            parsed.get("alwaysThinkingEnabled").is_none(),
+            "fallback preview should match the visible raw settings when common snippet merge fails"
+        );
+    }
 }

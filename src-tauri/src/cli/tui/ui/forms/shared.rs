@@ -58,6 +58,9 @@ pub(crate) fn add_form_key_items(
         }
         FormFocus::JsonPreview => {
             keys.extend([
+                ("Ctrl+Y", texts::tui_key_copy()),
+                ("Ctrl+W", texts::tui_key_save_to_file()),
+                ("Ctrl+O", texts::tui_key_external_editor()),
                 ("Enter", texts::tui_key_edit_mode()),
                 ("↑↓", texts::tui_key_scroll()),
             ]);

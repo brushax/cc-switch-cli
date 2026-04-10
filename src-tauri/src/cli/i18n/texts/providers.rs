@@ -842,6 +842,22 @@ pub fn tui_key_save() -> &'static str {
     }
 }
 
+pub fn tui_key_copy() -> &'static str {
+    if is_chinese() {
+        "复制"
+    } else {
+        "copy"
+    }
+}
+
+pub fn tui_key_save_to_file() -> &'static str {
+    if is_chinese() {
+        "另存为文件"
+    } else {
+        "save to file"
+    }
+}
+
 pub fn tui_key_external_editor() -> &'static str {
     if is_chinese() {
         "外部编辑器"

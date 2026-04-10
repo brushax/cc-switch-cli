@@ -399,6 +399,24 @@ impl App {
             return None;
         };
 
+        if is_copy_shortcut(key) {
+            let content = self.provider_preview_content(data)?;
+            return Some(Action::ExtractedTextCopy { content });
+        }
+
+        if is_save_to_file_shortcut(key) {
+            let Some(content) = self.provider_preview_content(data) else {
+                return Some(Action::None);
+            };
+            self.open_extracted_text_save_prompt(content);
+            return Some(Action::None);
+        }
+
+        if is_open_external_editor_shortcut(key) {
+            let content = self.provider_preview_content(data)?;
+            return Some(Action::ExtractedTextOpenExternal { content });
+        }
+
         if matches!(provider.app_type, AppType::Codex) {
             self.handle_codex_provider_preview_key(key)
         } else {
@@ -609,6 +627,44 @@ impl App {
                     provider.name.value.trim(),
                     &existing_ids,
                 ));
+        }
+    }
+
+    fn provider_preview_content(&self, data: &UiData) -> Option<String> {
+        let Some(FormState::ProviderAdd(provider)) = self.form.as_ref() else {
+            return None;
+        };
+
+        if !matches!(provider.focus, FormFocus::JsonPreview) {
+            return None;
+        }
+
+        if matches!(provider.app_type, AppType::Codex) {
+            let provider_json = provider.to_provider_json_value();
+            match provider.codex_preview_section {
+                form::CodexPreviewSection::Auth => {
+                    let auth_value = provider_json
+                        .get("settingsConfig")
+                        .and_then(|value| value.get("auth"))
+                        .cloned()
+                        .filter(|value| value.is_object())
+                        .unwrap_or_else(|| serde_json::Value::Object(serde_json::Map::new()));
+                    Some(
+                        serde_json::to_string_pretty(&auth_value)
+                            .unwrap_or_else(|_| "{}".to_string()),
+                    )
+                }
+                form::CodexPreviewSection::Config => Some(
+                    provider_json
+                        .get("settingsConfig")
+                        .and_then(|value| value.get("config"))
+                        .and_then(|value| value.as_str())
+                        .unwrap_or("")
+                        .to_string(),
+                ),
+            }
+        } else {
+            Some(provider.preview_settings_config_text(&data.config.common_snippet))
         }
     }
 }

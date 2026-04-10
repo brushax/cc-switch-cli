@@ -88,6 +88,7 @@ pub enum TextSubmit {
     ConfigExport,
     ConfigImport,
     ConfigBackupName,
+    ExtractedTextSave,
     SettingsProxyListenAddress,
     SettingsProxyListenPort,
     SettingsOpenClawConfigDir,
@@ -113,6 +114,11 @@ pub struct TextInputState {
     pub buffer: String,
     pub submit: TextSubmit,
     pub secret: bool,
+}
+
+#[derive(Debug, Clone)]
+pub struct PendingExtractedText {
+    pub content: String,
 }
 
 #[derive(Debug, Clone)]

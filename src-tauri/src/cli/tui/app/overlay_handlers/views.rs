@@ -118,6 +118,33 @@ impl App {
             return None;
         }
 
+        if is_copy_shortcut(key) {
+            let Overlay::TextView(view) = &self.overlay else {
+                return Some(Action::None);
+            };
+            return Some(Action::ExtractedTextCopy {
+                content: view.lines.join("\n"),
+            });
+        }
+
+        if is_save_to_file_shortcut(key) {
+            let Overlay::TextView(view) = &self.overlay else {
+                return Some(Action::None);
+            };
+            let content = view.lines.join("\n");
+            self.open_extracted_text_save_prompt(content);
+            return Some(Action::None);
+        }
+
+        if is_open_external_editor_shortcut(key) {
+            let Overlay::TextView(view) = &self.overlay else {
+                return Some(Action::None);
+            };
+            return Some(Action::ExtractedTextOpenExternal {
+                content: view.lines.join("\n"),
+            });
+        }
+
         Some(match key.code {
             KeyCode::Esc | KeyCode::Char('q') => {
                 self.overlay = Overlay::None;
@@ -183,6 +210,33 @@ impl App {
     }
 
     fn handle_common_snippet_view_key(&mut self, key: KeyEvent) -> Option<Action> {
+        if is_copy_shortcut(key) {
+            let Overlay::CommonSnippetView { view, .. } = &self.overlay else {
+                return None;
+            };
+            return Some(Action::ExtractedTextCopy {
+                content: view.lines.join("\n"),
+            });
+        }
+
+        if is_save_to_file_shortcut(key) {
+            let Overlay::CommonSnippetView { view, .. } = &self.overlay else {
+                return None;
+            };
+            let content = view.lines.join("\n");
+            self.open_extracted_text_save_prompt(content);
+            return Some(Action::None);
+        }
+
+        if is_open_external_editor_shortcut(key) {
+            let Overlay::CommonSnippetView { view, .. } = &self.overlay else {
+                return None;
+            };
+            return Some(Action::ExtractedTextOpenExternal {
+                content: view.lines.join("\n"),
+            });
+        }
+
         let Overlay::CommonSnippetView { app_type, view } = &mut self.overlay else {
             return None;
         };

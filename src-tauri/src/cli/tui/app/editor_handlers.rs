@@ -20,6 +20,18 @@ impl App {
             return Action::EditorOpenExternal;
         }
 
+        if is_copy_shortcut(key) {
+            return Action::ExtractedTextCopy {
+                content: editor.text(),
+            };
+        }
+
+        if is_save_to_file_shortcut(key) {
+            let content = editor.text();
+            self.open_extracted_text_save_prompt(content);
+            return Action::None;
+        }
+
         match key.code {
             KeyCode::Esc => {
                 if editor.is_dirty() {

@@ -16,6 +16,7 @@ mod claude_temp_launch;
 mod codex_temp_launch;
 mod config;
 mod editor;
+mod extracted_text;
 mod helpers;
 mod mcp;
 mod prompts;
@@ -204,6 +205,13 @@ pub(crate) fn handle_action(
         }
         Action::EditorOpenExternal => editor::open_external(&mut ctx),
         Action::EditorSubmit { submit, content } => editor::submit(&mut ctx, submit, content),
+        Action::ExtractedTextCopy { content } => extracted_text::copy(&mut ctx, content),
+        Action::ExtractedTextOpenExternal { content } => {
+            extracted_text::open_external(&mut ctx, content)
+        }
+        Action::ExtractedTextSave { path, content } => {
+            extracted_text::save(&mut ctx, path, content)
+        }
         Action::ProviderSwitch { id } => providers::switch(&mut ctx, id),
         Action::ProviderRemoveFromConfig { id } => providers::remove_from_config(&mut ctx, id),
         Action::ProviderSetDefaultModel {

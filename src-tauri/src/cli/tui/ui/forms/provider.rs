@@ -264,20 +264,7 @@ pub(crate) fn render_provider_add_form(
         );
     } else {
         // JSON Preview (settingsConfig only, matching upstream UI)
-        let provider_json_value = provider
-            .to_provider_json_value_with_common_config(&data.config.common_snippet)
-            .unwrap_or_else(|_| provider.to_provider_json_value());
-        let json_value = provider_json_value
-            .get("settingsConfig")
-            .cloned()
-            .unwrap_or_else(|| Value::Object(serde_json::Map::new()));
-        let json_value = if matches!(provider.app_type, AppType::OpenClaw) {
-            redact_sensitive_json(&json_value)
-        } else {
-            json_value
-        };
-        let json_text =
-            serde_json::to_string_pretty(&json_value).unwrap_or_else(|_| "{}".to_string());
+        let json_text = provider.preview_settings_config_text(&data.config.common_snippet);
         render_form_json_preview(
             frame,
             &json_text,

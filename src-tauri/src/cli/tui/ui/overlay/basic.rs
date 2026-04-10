@@ -362,7 +362,12 @@ pub(super) fn render_text_view_overlay(
         .constraints([Constraint::Length(1), Constraint::Min(0)])
         .split(inner);
 
-    let mut keys = vec![("↑↓", texts::tui_key_scroll())];
+    let mut keys = vec![
+        ("↑↓", texts::tui_key_scroll()),
+        ("Ctrl+Y", texts::tui_key_copy()),
+        ("Ctrl+W", texts::tui_key_save_to_file()),
+        ("Ctrl+O", texts::tui_key_external_editor()),
+    ];
     if has_action {
         keys.push(("T", texts::tui_key_toggle()));
     }
@@ -455,6 +460,9 @@ pub(super) fn render_common_snippet_view_overlay(
             ("c", texts::tui_key_clear()),
             ("e", texts::tui_key_edit()),
             ("↑↓", texts::tui_key_scroll()),
+            ("Ctrl+Y", texts::tui_key_copy()),
+            ("Ctrl+W", texts::tui_key_save_to_file()),
+            ("Ctrl+O", texts::tui_key_external_editor()),
             ("Esc", texts::tui_key_close()),
         ],
     );

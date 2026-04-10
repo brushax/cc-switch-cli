@@ -23,6 +23,7 @@ impl App {
             filter: FilterState::new(),
             editor: None,
             form: None,
+            pending_extracted_text: None,
             pending_overlay: None,
             overlay: Overlay::None,
             toast: None,

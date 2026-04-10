@@ -152,7 +152,12 @@ impl App {
                 ) {
                     self.webdav_quick_setup_username = None;
                 }
-                self.overlay = Overlay::None;
+                if matches!(submit, TextSubmit::ExtractedTextSave) {
+                    self.pending_extracted_text = None;
+                    self.close_overlay();
+                } else {
+                    self.overlay = Overlay::None;
+                }
                 Action::None
             }
             KeyCode::Enter => {
@@ -160,7 +165,11 @@ impl App {
                     Overlay::TextInput(input) => input.buffer.trim().to_string(),
                     _ => String::new(),
                 };
-                self.overlay = Overlay::None;
+                if matches!(submit, TextSubmit::ExtractedTextSave) {
+                    self.close_overlay();
+                } else {
+                    self.overlay = Overlay::None;
+                }
                 self.handle_text_input_submit(submit, raw, data)
             }
             KeyCode::Backspace => {
@@ -212,6 +221,22 @@ impl App {
             TextSubmit::ConfigBackupName => {
                 let name = if raw.is_empty() { None } else { Some(raw) };
                 Action::ConfigBackup { name }
+            }
+            TextSubmit::ExtractedTextSave => {
+                if raw.is_empty() {
+                    self.push_toast(texts::tui_toast_export_path_empty(), ToastKind::Warning);
+                    self.pending_extracted_text = None;
+                    return Action::None;
+                }
+
+                let Some(pending) = self.pending_extracted_text.take() else {
+                    return Action::None;
+                };
+
+                Action::ExtractedTextSave {
+                    path: raw,
+                    content: pending.content,
+                }
             }
             TextSubmit::SettingsProxyListenAddress => {
                 self.handle_settings_proxy_listen_address_submit(data, raw)

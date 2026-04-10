@@ -706,6 +706,22 @@ pub fn tui_toast_exported_to(path: &str) -> String {
     }
 }
 
+pub fn tui_toast_clipboard_copy_requested() -> &'static str {
+    if is_chinese() {
+        "已发送剪贴板复制请求。"
+    } else {
+        "Clipboard copy request sent."
+    }
+}
+
+pub fn tui_toast_clipboard_copy_failed(err: &str) -> String {
+    if is_chinese() {
+        format!("剪贴板复制失败: {err}")
+    } else {
+        format!("Clipboard copy failed: {err}")
+    }
+}
+
 pub fn tui_error_import_file_not_found(path: &str) -> String {
     if is_chinese() {
         format!("导入文件不存在: {}", path)

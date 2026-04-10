@@ -159,6 +159,16 @@ pub enum Action {
     },
     EditorDiscard,
     EditorOpenExternal,
+    ExtractedTextCopy {
+        content: String,
+    },
+    ExtractedTextOpenExternal {
+        content: String,
+    },
+    ExtractedTextSave {
+        path: String,
+        content: String,
+    },
 
     SetSkipClaudeOnboarding {
         enabled: bool,
@@ -427,6 +437,7 @@ pub struct App {
     pub filter: FilterState,
     pub editor: Option<EditorState>,
     pub form: Option<FormState>,
+    pub pending_extracted_text: Option<PendingExtractedText>,
     pub pending_overlay: Option<Overlay>,
     pub overlay: Overlay,
     pub toast: Option<Toast>,

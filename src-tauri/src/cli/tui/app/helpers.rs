@@ -1211,9 +1211,40 @@ pub(crate) fn is_save_shortcut(key: KeyEvent) -> bool {
     }
 }
 
+pub(crate) fn is_save_to_file_shortcut(key: KeyEvent) -> bool {
+    match key.code {
+        KeyCode::Char('w' | 'W') => key.modifiers.contains(KeyModifiers::CONTROL),
+        KeyCode::Char('\u{17}') => true,
+        _ => false,
+    }
+}
+
+pub(crate) fn is_copy_shortcut(key: KeyEvent) -> bool {
+    match key.code {
+        KeyCode::Char('y' | 'Y') => key.modifiers.contains(KeyModifiers::CONTROL),
+        KeyCode::Char('\u{19}') => true,
+        _ => false,
+    }
+}
+
 pub(crate) fn is_open_external_editor_shortcut(key: KeyEvent) -> bool {
     match key.code {
         KeyCode::Char('o' | 'O') => key.modifiers.contains(KeyModifiers::CONTROL),
+        KeyCode::Char('\u{0f}') => true,
         _ => false,
+    }
+}
+
+impl App {
+    pub(crate) fn open_extracted_text_save_prompt(&mut self, content: String) {
+        self.pending_extracted_text = Some(PendingExtractedText { content });
+        self.pending_overlay = self.overlay.is_active().then(|| self.overlay.clone());
+        self.overlay = Overlay::TextInput(TextInputState {
+            title: texts::tui_save_to_file_title().to_string(),
+            prompt: texts::tui_save_to_file_prompt().to_string(),
+            buffer: String::new(),
+            submit: TextSubmit::ExtractedTextSave,
+            secret: false,
+        });
     }
 }

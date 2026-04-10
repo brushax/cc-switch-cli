@@ -461,6 +461,78 @@ impl ProviderAddFormState {
 
         Ok(provider_value)
     }
+
+    pub fn preview_settings_config_value(&self, common_snippet: &str) -> Value {
+        let provider_value = self
+            .to_provider_json_value_with_common_config(common_snippet)
+            .unwrap_or_else(|_| self.to_provider_json_value());
+        let settings_value = provider_value
+            .get("settingsConfig")
+            .cloned()
+            .unwrap_or_else(|| Value::Object(serde_json::Map::new()));
+
+        if matches!(self.app_type, AppType::OpenClaw) {
+            redact_preview_sensitive_json(&settings_value)
+        } else {
+            settings_value
+        }
+    }
+
+    pub fn preview_settings_config_text(&self, common_snippet: &str) -> String {
+        serde_json::to_string_pretty(&self.preview_settings_config_value(common_snippet))
+            .unwrap_or_else(|_| "{}".to_string())
+    }
+}
+
+fn redact_preview_sensitive_json(value: &Value) -> Value {
+    match value {
+        Value::Object(map) => Value::Object(
+            map.iter()
+                .map(|(key, value)| {
+                    let next = if is_sensitive_preview_key(key) {
+                        redact_preview_value_payload(value)
+                    } else {
+                        redact_preview_sensitive_json(value)
+                    };
+                    (key.clone(), next)
+                })
+                .collect(),
+        ),
+        Value::Array(items) => {
+            Value::Array(items.iter().map(redact_preview_sensitive_json).collect())
+        }
+        _ => value.clone(),
+    }
+}
+
+fn redact_preview_value_payload(value: &Value) -> Value {
+    match value {
+        Value::Object(map) => Value::Object(
+            map.iter()
+                .map(|(key, value)| (key.clone(), redact_preview_value_payload(value)))
+                .collect(),
+        ),
+        Value::Array(items) => {
+            Value::Array(items.iter().map(redact_preview_value_payload).collect())
+        }
+        Value::Null => Value::Null,
+        _ => Value::String("[redacted]".to_string()),
+    }
+}
+
+fn is_sensitive_preview_key(key: &str) -> bool {
+    let normalized = key
+        .chars()
+        .filter(|ch| ch.is_ascii_alphanumeric())
+        .flat_map(|ch| ch.to_lowercase())
+        .collect::<String>();
+
+    normalized == "authorization"
+        || normalized.ends_with("authorization")
+        || normalized.ends_with("apikey")
+        || normalized.ends_with("token")
+        || normalized.ends_with("password")
+        || normalized.ends_with("secret")
 }
 
 fn openclaw_model_index(models: &[Value], model_id: &str) -> Option<usize> {

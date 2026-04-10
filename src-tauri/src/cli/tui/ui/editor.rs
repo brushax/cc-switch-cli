@@ -22,6 +22,8 @@ pub(super) fn render_editor(
 
     let keys = vec![
         ("↑↓←→", texts::tui_key_move()),
+        ("Ctrl+Y", texts::tui_key_copy()),
+        ("Ctrl+W", texts::tui_key_save_to_file()),
         ("Ctrl+O", texts::tui_key_external_editor()),
         ("Ctrl+S", texts::tui_key_save()),
         ("Esc", texts::tui_key_close()),

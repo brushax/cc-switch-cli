@@ -7,6 +7,7 @@ pub mod commands;
 pub mod editor;
 pub mod i18n;
 pub mod interactive;
+pub mod osc52;
 pub mod terminal;
 pub mod tui;
 pub mod ui;

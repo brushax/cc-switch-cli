@@ -2264,6 +2264,22 @@ pub mod texts {
         }
     }
 
+    pub fn tui_key_copy() -> &'static str {
+        if is_chinese() {
+            "复制"
+        } else {
+            "copy"
+        }
+    }
+
+    pub fn tui_key_save_to_file() -> &'static str {
+        if is_chinese() {
+            "另存为文件"
+        } else {
+            "save to file"
+        }
+    }
+
     pub fn tui_key_external_editor() -> &'static str {
         if is_chinese() {
             "外部编辑器"
@@ -4297,6 +4313,22 @@ pub mod texts {
         }
     }
 
+    pub fn tui_save_to_file_title() -> &'static str {
+        if is_chinese() {
+            "保存到文件"
+        } else {
+            "Save To File"
+        }
+    }
+
+    pub fn tui_save_to_file_prompt() -> &'static str {
+        if is_chinese() {
+            "文件路径："
+        } else {
+            "File path:"
+        }
+    }
+
     pub fn tui_config_import_title() -> &'static str {
         if is_chinese() {
             "导入配置"
@@ -5033,6 +5065,22 @@ pub mod texts {
             format!("已导出到 {}", path)
         } else {
             format!("Exported to {}", path)
+        }
+    }
+
+    pub fn tui_toast_clipboard_copy_requested() -> &'static str {
+        if is_chinese() {
+            "已发送剪贴板复制请求。"
+        } else {
+            "Clipboard copy request sent."
+        }
+    }
+
+    pub fn tui_toast_clipboard_copy_failed(err: &str) -> String {
+        if is_chinese() {
+            format!("剪贴板复制失败: {err}")
+        } else {
+            format!("Clipboard copy failed: {err}")
         }
     }
 

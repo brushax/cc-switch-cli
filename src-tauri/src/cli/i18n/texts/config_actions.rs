@@ -896,6 +896,22 @@ pub fn tui_config_export_prompt() -> &'static str {
     }
 }
 
+pub fn tui_save_to_file_title() -> &'static str {
+    if is_chinese() {
+        "保存到文件"
+    } else {
+        "Save To File"
+    }
+}
+
+pub fn tui_save_to_file_prompt() -> &'static str {
+    if is_chinese() {
+        "文件路径："
+    } else {
+        "File path:"
+    }
+}
+
 pub fn tui_config_import_title() -> &'static str {
     if is_chinese() {
         "导入配置"

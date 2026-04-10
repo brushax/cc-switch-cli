@@ -1323,6 +1323,32 @@ fn editor_key_bar_shows_ctrl_o_external_editor_hint() {
 }
 
 #[test]
+fn editor_key_bar_shows_copy_and_save_to_file_hints() {
+    let _lock = lock_env();
+    let _lang = use_test_language(Language::English);
+    let _no_color = EnvGuard::remove("NO_COLOR");
+
+    let mut app = App::new(Some(AppType::Claude));
+    app.route = Route::Config;
+    app.focus = Focus::Content;
+    app.open_editor(
+        "Demo Editor",
+        EditorKind::Json,
+        "{\n  \"demo\": true\n}",
+        EditorSubmit::ConfigCommonSnippet {
+            app_type: app.app_type.clone(),
+        },
+    );
+
+    let all = all_text(&render(&app, &minimal_data(&app.app_type)));
+
+    assert!(all.contains("Ctrl+Y"), "{all}");
+    assert!(all.contains("Ctrl+W"), "{all}");
+    assert!(all.contains(texts::tui_key_copy()), "{all}");
+    assert!(all.contains(texts::tui_key_save_to_file()), "{all}");
+}
+
+#[test]
 fn home_restores_main_logo_and_home_labels() {
     let _lock = lock_env();
     let _no_color = EnvGuard::remove("NO_COLOR");
@@ -7165,4 +7191,53 @@ fn provider_detail_keys_line_does_not_include_q_back() {
         !all.contains("q=back"),
         "provider detail inline keys should not include q=back"
     );
+}
+
+#[test]
+fn text_view_overlay_shows_copy_save_and_external_editor_hints() {
+    let _lock = lock_env();
+    let _lang = use_test_language(Language::English);
+    let _no_color = EnvGuard::remove("NO_COLOR");
+
+    let mut app = App::new(Some(AppType::Claude));
+    app.overlay = Overlay::TextView(app::TextViewState {
+        title: "Preview".to_string(),
+        lines: vec!["first".to_string(), "second".to_string()],
+        scroll: 0,
+        action: None,
+    });
+
+    let all = all_text(&render(&app, &minimal_data(&app.app_type)));
+
+    assert!(all.contains("Ctrl+Y"), "{all}");
+    assert!(all.contains("Ctrl+W"), "{all}");
+    assert!(all.contains("Ctrl+O"), "{all}");
+    assert!(all.contains(texts::tui_key_copy()), "{all}");
+    assert!(all.contains(texts::tui_key_save_to_file()), "{all}");
+    assert!(all.contains("external"), "{all}");
+}
+
+#[test]
+fn provider_json_preview_shows_copy_save_and_external_editor_hints() {
+    let _lock = lock_env();
+    let _lang = use_test_language(Language::English);
+    let _no_color = EnvGuard::remove("NO_COLOR");
+
+    let mut app = App::new(Some(AppType::Claude));
+    app.route = Route::Providers;
+    app.focus = Focus::Content;
+
+    let data = minimal_data(&app.app_type);
+    app.on_key(KeyEvent::new(KeyCode::Char('a'), KeyModifiers::NONE), &data);
+    app.on_key(KeyEvent::new(KeyCode::Enter, KeyModifiers::NONE), &data);
+    app.on_key(KeyEvent::new(KeyCode::Tab, KeyModifiers::NONE), &data);
+
+    let all = all_text(&render(&app, &data));
+
+    assert!(all.contains("Ctrl+Y"), "{all}");
+    assert!(all.contains("Ctrl+W"), "{all}");
+    assert!(all.contains("Ctrl+O"), "{all}");
+    assert!(all.contains(texts::tui_key_copy()), "{all}");
+    assert!(all.contains(texts::tui_key_save_to_file()), "{all}");
+    assert!(all.contains("external"), "{all}");
 }
